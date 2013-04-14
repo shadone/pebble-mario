@@ -8,6 +8,9 @@ Mario jumps every minute.
 Based on this concept:
 http://www.mypebblefaces.com/view?fID=290&aName=Habib&pageTitle=MarioTime&auID=265
 
+Download: [pebble-mario.pbw](https://s3-eu-west-1.amazonaws.com/www.ddenis.info/pebble-mario/pebble-mario.pbw)
+
+
 ## Licence
 
 Copyright (C) 2013 Denis Dzyubenko
