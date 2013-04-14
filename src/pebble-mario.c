@@ -361,10 +361,6 @@ void handle_tick(AppContextRef app_ctx, PebbleTickEvent *event)
     char *minute_format = "%M";
     string_format_time(minute_text, sizeof(minute_text), minute_format, event->tick_time);
 
-    if (!clock_is_24h_style() && (minute_text[0] == '0')) {
-        memmove(minute_text, &minute_text[1], sizeof(minute_text) - 1);
-    }
-
     animation_schedule(&mario_animation_beg.animation);
     animation_schedule(&block_animation_beg.animation);
     animation_schedule(&hour_animation_slide_away.animation);
