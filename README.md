@@ -5,6 +5,9 @@ Mario jumps every minute.
 
 [![Preview](http://i.imgur.com/Vl6cLh9.jpg)](http://i.imgur.com/Vl6cLh9.jpg)
 
+Based on this concept:
+http://www.mypebblefaces.com/view?fID=290&aName=Habib&pageTitle=MarioTime&auID=265
+
 ## Licence
 
 Copyright (C) 2013 Denis Dzyubenko
