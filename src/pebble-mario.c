@@ -43,6 +43,13 @@ GRect blocks_up_rect;
 GRect mario_down_rect;
 GRect mario_up_rect;
 
+GRect hour_up_rect;
+GRect hour_normal_rect;
+GRect hour_down_rect;
+GRect minute_up_rect;
+GRect minute_normal_rect;
+GRect minute_down_rect;
+
 static int mario_is_down = 1;
 
 BmpContainer mario_normal_bmp;
@@ -54,8 +61,16 @@ PropertyAnimation mario_animation_end;
 PropertyAnimation block_animation_beg;
 PropertyAnimation block_animation_end;
 
+PropertyAnimation hour_animation_slide_away;
+PropertyAnimation hour_animation_slide_in;
+PropertyAnimation minute_animation_slide_away;
+PropertyAnimation minute_animation_slide_in;
+
 #define BLOCK_SIZE 50
+#define BLOCK_LAYER_EXTRA 3
+#define BLOCK_SQUEEZE 10
 #define MARIO_JUMP_DURATION 50
+#define CLOCK_ANIMATION_DURATION 150
 
 void draw_block(GContext *ctx, GRect rect, uint8_t width)
 {
@@ -102,13 +117,13 @@ void blocks_update_callback(Layer *layer, GContext *ctx)
 
     GRect rect;
 
-    rect = GRect(layer->bounds.origin.x, layer->bounds.origin.y,
-                 BLOCK_SIZE - 1, layer->frame.size.h - 1);
+    rect = GRect(layer->bounds.origin.x, layer->bounds.origin.y + BLOCK_LAYER_EXTRA,
+                 BLOCK_SIZE - 1, layer->frame.size.h - BLOCK_LAYER_EXTRA - 1);
     graphics_context_set_stroke_color(ctx, GColorBlack);
     draw_block(ctx, rect, 5);
 
-    rect = GRect(layer->bounds.origin.x + BLOCK_SIZE, layer->bounds.origin.y,
-                 BLOCK_SIZE - 1, layer->frame.size.h - 1);
+    rect = GRect(layer->bounds.origin.x + BLOCK_SIZE, layer->bounds.origin.y + BLOCK_LAYER_EXTRA,
+                 BLOCK_SIZE - 1, layer->frame.size.h - BLOCK_LAYER_EXTRA - 1);
     graphics_context_set_stroke_color(ctx, GColorBlack);
     draw_block(ctx, rect, 5);
 }
@@ -137,10 +152,17 @@ void handle_init(AppContextRef ctx)
 
     resource_init_current_app(&APP_RESOURCES);
 
-    blocks_down_rect = GRect(22, 7, BLOCK_SIZE*2, BLOCK_SIZE);
-    blocks_up_rect = GRect(22, 2, BLOCK_SIZE*2, BLOCK_SIZE-10);
+    blocks_down_rect = GRect(22, 7, BLOCK_SIZE*2, BLOCK_SIZE + BLOCK_LAYER_EXTRA);
+    blocks_up_rect = GRect(22, 0, BLOCK_SIZE*2, BLOCK_SIZE + BLOCK_LAYER_EXTRA - BLOCK_SQUEEZE);
     mario_down_rect = GRect(32, 70, 80, 80);
-    mario_up_rect = GRect(32, 42, 80, 80);
+    mario_up_rect = GRect(32, BLOCK_SIZE + BLOCK_LAYER_EXTRA - BLOCK_SQUEEZE, 80, 80);
+
+    hour_up_rect = GRect(5, -10, 40, 40);
+    hour_normal_rect = GRect(5, 5 + BLOCK_LAYER_EXTRA, 40, 40);
+    hour_down_rect = GRect(5, BLOCK_SIZE + BLOCK_LAYER_EXTRA, 40, 40);
+    minute_up_rect = GRect(55, -10, 40, 40);
+    minute_normal_rect = GRect(55, 5 + BLOCK_LAYER_EXTRA, 40, 40);
+    minute_down_rect = GRect(55, BLOCK_SIZE + BLOCK_LAYER_EXTRA, 40, 40);
 
     layer_init(&blocks_layer, blocks_down_rect);
     layer_init(&mario_layer, mario_down_rect);
@@ -151,12 +173,11 @@ void handle_init(AppContextRef ctx)
     layer_add_child(&window.layer, &blocks_layer);
     layer_add_child(&window.layer, &mario_layer);
 
-    text_layer_init(&text_hour_layer, GRect(5, 5, 40, 40));
+    text_layer_init(&text_hour_layer, hour_normal_rect);
     text_layer_set_text_color(&text_hour_layer, GColorBlack);
     text_layer_set_background_color(&text_hour_layer, GColorClear);
     text_layer_set_text_alignment(&text_hour_layer, GTextAlignmentCenter);
     text_layer_set_font(&text_hour_layer, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
-    // text_layer_set_font(&text_hour_layer, fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT)));
     layer_add_child(&blocks_layer, &text_hour_layer.layer);
 
     text_layer_init(&text_minute_layer, GRect(55, 5, 40, 40));
@@ -164,7 +185,6 @@ void handle_init(AppContextRef ctx)
     text_layer_set_background_color(&text_minute_layer, GColorClear);
     text_layer_set_text_alignment(&text_minute_layer, GTextAlignmentCenter);
     text_layer_set_font(&text_minute_layer, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
-    // text_layer_set_font(&text_minute_layer, fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT)));
     layer_add_child(&blocks_layer, &text_minute_layer.layer);
 
     bmp_init_container(RESOURCE_ID_IMAGE_MARIO_NORMAL, &mario_normal_bmp);
@@ -239,6 +259,33 @@ void block_up_animation_stopped(Animation *animation, void *data)
     animation_schedule(&block_animation_end.animation);
 }
 
+void clock_animation_slide_away_started(Animation *animation, void *data)
+{
+    (void)animation;
+    (void)data;
+}
+
+void clock_animation_slide_away_stopped(Animation *animation, void *data)
+{
+    (void)animation;
+    (void)data;
+
+    layer_set_frame(&text_hour_layer.layer, hour_down_rect);
+    layer_set_frame(&text_minute_layer.layer, minute_down_rect);
+
+    property_animation_init_layer_frame(&hour_animation_slide_in, &text_hour_layer.layer,
+                                        &hour_down_rect, &hour_normal_rect);
+    animation_set_duration(&hour_animation_slide_in.animation, CLOCK_ANIMATION_DURATION);
+    animation_set_curve(&hour_animation_slide_in.animation, AnimationCurveLinear);
+    animation_schedule(&hour_animation_slide_in.animation);
+
+    property_animation_init_layer_frame(&minute_animation_slide_in, &text_minute_layer.layer,
+                                        &minute_down_rect, &minute_normal_rect);
+    animation_set_duration(&minute_animation_slide_in.animation, CLOCK_ANIMATION_DURATION);
+    animation_set_curve(&minute_animation_slide_in.animation, AnimationCurveLinear);
+    animation_schedule(&minute_animation_slide_in.animation);
+}
+
 void handle_tick(AppContextRef app_ctx, PebbleTickEvent *event)
 {
     property_animation_init_layer_frame(&mario_animation_beg, &mario_layer,
@@ -258,6 +305,20 @@ void handle_tick(AppContextRef app_ctx, PebbleTickEvent *event)
         .started = (AnimationStartedHandler)block_up_animation_started,
         .stopped = (AnimationStoppedHandler)block_up_animation_stopped
     }, 0);
+
+    property_animation_init_layer_frame(&hour_animation_slide_away, &text_hour_layer.layer,
+                                        &hour_normal_rect, &hour_up_rect);
+    animation_set_duration(&hour_animation_slide_away.animation, CLOCK_ANIMATION_DURATION);
+    animation_set_curve(&hour_animation_slide_away.animation, AnimationCurveLinear);
+    animation_set_handlers(&hour_animation_slide_away.animation, (AnimationHandlers){
+        .started = (AnimationStartedHandler)clock_animation_slide_away_started,
+        .stopped = (AnimationStoppedHandler)clock_animation_slide_away_stopped
+    }, 0);
+
+    property_animation_init_layer_frame(&minute_animation_slide_away, &text_minute_layer.layer,
+                                        &minute_normal_rect, &minute_up_rect);
+    animation_set_duration(&minute_animation_slide_away.animation, CLOCK_ANIMATION_DURATION);
+    animation_set_curve(&minute_animation_slide_away.animation, AnimationCurveLinear);
 
     char *hour_format;
     if (clock_is_24h_style()) {
@@ -279,6 +340,8 @@ void handle_tick(AppContextRef app_ctx, PebbleTickEvent *event)
 
     animation_schedule(&mario_animation_beg.animation);
     animation_schedule(&block_animation_beg.animation);
+    animation_schedule(&hour_animation_slide_away.animation);
+    animation_schedule(&minute_animation_slide_away.animation);
 }
 
 void pbl_main(void *params)
