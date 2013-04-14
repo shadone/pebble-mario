@@ -34,6 +34,7 @@ Layer blocks_layer;
 Layer mario_layer;
 TextLayer text_hour_layer;
 TextLayer text_minute_layer;
+Layer ground_layer;
 
 static char hour_text[]   = "00";
 static char minute_text[] = "00";
@@ -42,6 +43,7 @@ GRect blocks_down_rect;
 GRect blocks_up_rect;
 GRect mario_down_rect;
 GRect mario_up_rect;
+GRect ground_rect;
 
 GRect hour_up_rect;
 GRect hour_normal_rect;
@@ -54,6 +56,7 @@ static int mario_is_down = 1;
 
 BmpContainer mario_normal_bmp;
 BmpContainer mario_jump_bmp;
+BmpContainer ground_bmp;
 
 PropertyAnimation mario_animation_beg;
 PropertyAnimation mario_animation_end;
@@ -71,6 +74,7 @@ PropertyAnimation minute_animation_slide_in;
 #define BLOCK_SQUEEZE 10
 #define MARIO_JUMP_DURATION 50
 #define CLOCK_ANIMATION_DURATION 150
+#define GROUND_HEIGHT 26
 
 void draw_block(GContext *ctx, GRect rect, uint8_t width)
 {
@@ -143,6 +147,23 @@ void mario_update_callback(Layer *layer, GContext *ctx)
     graphics_draw_bitmap_in_rect(ctx, &bmp->bmp, destination);
 }
 
+void ground_update_callback(Layer *layer, GContext *ctx)
+{
+    (void)layer;
+    (void)ctx;
+
+    GRect image_rect = layer_get_frame(&ground_bmp.layer.layer);
+    GRect rect = layer_get_frame(layer);
+    int16_t image_width = image_rect.size.w;
+
+    image_rect.origin.x = -10;
+    image_rect.origin.y = 0;
+    for (int i = 0; i < rect.size.w / image_rect.size.w + 1; ++i) {
+        graphics_draw_bitmap_in_rect(ctx, &ground_bmp.bmp, image_rect);
+        image_rect.origin.x +=  image_width;
+    }
+}
+
 void handle_init(AppContextRef ctx)
 {
     (void)ctx;
@@ -154,8 +175,9 @@ void handle_init(AppContextRef ctx)
 
     blocks_down_rect = GRect(22, 7, BLOCK_SIZE*2, BLOCK_SIZE + BLOCK_LAYER_EXTRA);
     blocks_up_rect = GRect(22, 0, BLOCK_SIZE*2, BLOCK_SIZE + BLOCK_LAYER_EXTRA - BLOCK_SQUEEZE);
-    mario_down_rect = GRect(32, 70, 80, 80);
+    mario_down_rect = GRect(32, 168-GROUND_HEIGHT-80, 80, 80);
     mario_up_rect = GRect(32, BLOCK_SIZE + BLOCK_LAYER_EXTRA - BLOCK_SQUEEZE, 80, 80);
+    ground_rect = GRect(0, 168-GROUND_HEIGHT, 144, 168);
 
     hour_up_rect = GRect(5, -10, 40, 40);
     hour_normal_rect = GRect(5, 5 + BLOCK_LAYER_EXTRA, 40, 40);
@@ -166,12 +188,15 @@ void handle_init(AppContextRef ctx)
 
     layer_init(&blocks_layer, blocks_down_rect);
     layer_init(&mario_layer, mario_down_rect);
+    layer_init(&ground_layer, ground_rect);
 
     blocks_layer.update_proc = &blocks_update_callback;
     mario_layer.update_proc = &mario_update_callback;
+    ground_layer.update_proc = &ground_update_callback;
 
     layer_add_child(&window.layer, &blocks_layer);
     layer_add_child(&window.layer, &mario_layer);
+    layer_add_child(&window.layer, &ground_layer);
 
     text_layer_init(&text_hour_layer, hour_normal_rect);
     text_layer_set_text_color(&text_hour_layer, GColorBlack);
@@ -189,6 +214,7 @@ void handle_init(AppContextRef ctx)
 
     bmp_init_container(RESOURCE_ID_IMAGE_MARIO_NORMAL, &mario_normal_bmp);
     bmp_init_container(RESOURCE_ID_IMAGE_MARIO_JUMP, &mario_jump_bmp);
+    bmp_init_container(RESOURCE_ID_IMAGE_GROUND, &ground_bmp);
 }
 
 void handle_deinit(AppContextRef ctx)
@@ -197,6 +223,7 @@ void handle_deinit(AppContextRef ctx)
 
     bmp_deinit_container(&mario_normal_bmp);
     bmp_deinit_container(&mario_jump_bmp);
+    bmp_deinit_container(&ground_bmp);
 }
 
 void mario_down_animation_started(Animation *animation, void *data)

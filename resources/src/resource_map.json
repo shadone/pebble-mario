@@ -11,6 +11,11 @@
             "type":"png",
             "defName":"IMAGE_MARIO_JUMP",
             "file":"images/mario-jump.png"
+        },
+        {
+            "type":"png",
+            "defName":"IMAGE_GROUND",
+            "file":"images/ground.png"
         }
     ]
 }
