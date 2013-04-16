@@ -72,46 +72,24 @@ PropertyAnimation minute_animation_slide_in;
 #define BLOCK_SIZE 50
 #define BLOCK_LAYER_EXTRA 3
 #define BLOCK_SQUEEZE 10
+#define BLOCK_SPACING -1
 #define MARIO_JUMP_DURATION 50
 #define CLOCK_ANIMATION_DURATION 150
 #define GROUND_HEIGHT 26
 
 void draw_block(GContext *ctx, GRect rect, uint8_t width)
 {
-    GPoint p1;
-    GPoint p2;
+    static const uint8_t radius = 1;
 
-    int16_t x = rect.origin.x;
-    int16_t y = rect.origin.y;
-    int16_t w = rect.size.w;
-    int16_t h = rect.size.h;
+    graphics_context_set_fill_color(ctx, GColorBlack);
+    graphics_fill_rect(ctx, rect, radius, GCornersAll);
 
-    for (; width != 0; --width) {
-        // top
-        p1 = GPoint(x, y);
-        p2 = GPoint(x + w, y);
-        graphics_draw_line(ctx, p1, p2);
-
-        // left
-        p1 = GPoint(x, y);
-        p2 = GPoint(x, y + h);
-        graphics_draw_line(ctx, p1, p2);
-
-        // right
-        p1 = GPoint(x + w, y);
-        p2 = GPoint(x + w, y + h);
-        graphics_draw_line(ctx, p1, p2);
-
-        // bottom
-        p1 = GPoint(x, y + h);
-        p2 = GPoint(x + w, y + h);
-        graphics_draw_line(ctx, p1, p2);
-
-        x += 1;
-        y += 1;
-        w -= 2;
-        h -= 2;
-    }
+    rect.origin.x += width;
+    rect.origin.y += width;
+    rect.size.w -= width*2;
+    rect.size.h -= width*2;
+    graphics_context_set_fill_color(ctx, GColorWhite);
+    graphics_fill_rect(ctx, rect, radius, GCornersAll);
 }
 
 void blocks_update_callback(Layer *layer, GContext *ctx)
@@ -126,16 +104,20 @@ void blocks_update_callback(Layer *layer, GContext *ctx)
     GRect block_rect[2];
     GRect dot_rect;
 
-    block_rect[0] = GRect(layer->bounds.origin.x, layer->bounds.origin.y + BLOCK_LAYER_EXTRA,
-                          BLOCK_SIZE - 1, layer->frame.size.h - BLOCK_LAYER_EXTRA - 1);
-    block_rect[1] = GRect(layer->bounds.origin.x + BLOCK_SIZE, layer->bounds.origin.y + BLOCK_LAYER_EXTRA,
-                          BLOCK_SIZE - 1, layer->frame.size.h - BLOCK_LAYER_EXTRA - 1);
+    block_rect[0] = GRect(layer->bounds.origin.x,
+                          BLOCK_SIZE,
+                          layer->frame.size.h - BLOCK_LAYER_EXTRA);
+    block_rect[1] = GRect(layer->bounds.origin.x + BLOCK_SIZE + BLOCK_SPACING,
+                          layer->bounds.origin.y + BLOCK_LAYER_EXTRA,
+                          BLOCK_SIZE,
+                          layer->frame.size.h - BLOCK_LAYER_EXTRA);
 
     for (uint8_t i = 0; i < 2; ++i) {
         GRect *rect = block_rect + i;
 
-        graphics_context_set_stroke_color(ctx, GColorBlack);
         draw_block(ctx, *rect, 4);
+
+        graphics_context_set_fill_color(ctx, GColorBlack);
 
         // top left dot
         dot_rect = GRect(rect->origin.x + offset, rect->origin.y + offset,
@@ -210,9 +192,9 @@ void handle_init(AppContextRef ctx)
     hour_up_rect = GRect(5, -10, 40, 40);
     hour_normal_rect = GRect(5, 5 + BLOCK_LAYER_EXTRA, 40, 40);
     hour_down_rect = GRect(5, BLOCK_SIZE + BLOCK_LAYER_EXTRA, 40, 40);
-    minute_up_rect = GRect(55, -10, 40, 40);
-    minute_normal_rect = GRect(55, 5 + BLOCK_LAYER_EXTRA, 40, 40);
-    minute_down_rect = GRect(55, BLOCK_SIZE + BLOCK_LAYER_EXTRA, 40, 40);
+    minute_up_rect = GRect(5+BLOCK_SIZE+BLOCK_SPACING, -10, 40, 40);
+    minute_normal_rect = GRect(5+BLOCK_SIZE+BLOCK_SPACING, 5 + BLOCK_LAYER_EXTRA, 40, 40);
+    minute_down_rect = GRect(5+BLOCK_SIZE+BLOCK_SPACING, BLOCK_SIZE + BLOCK_LAYER_EXTRA, 40, 40);
 
     layer_init(&blocks_layer, blocks_down_rect);
     layer_init(&mario_layer, mario_down_rect);
