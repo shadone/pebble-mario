@@ -119,17 +119,45 @@ void blocks_update_callback(Layer *layer, GContext *ctx)
     (void)layer;
     (void)ctx;
 
-    GRect rect;
+    static const uint8_t offset = 8;
+    static const uint8_t dot_width = 6;
+    static const uint8_t dot_height = 4;
 
-    rect = GRect(layer->bounds.origin.x, layer->bounds.origin.y + BLOCK_LAYER_EXTRA,
-                 BLOCK_SIZE - 1, layer->frame.size.h - BLOCK_LAYER_EXTRA - 1);
-    graphics_context_set_stroke_color(ctx, GColorBlack);
-    draw_block(ctx, rect, 5);
+    GRect block_rect[2];
+    GRect dot_rect;
 
-    rect = GRect(layer->bounds.origin.x + BLOCK_SIZE, layer->bounds.origin.y + BLOCK_LAYER_EXTRA,
-                 BLOCK_SIZE - 1, layer->frame.size.h - BLOCK_LAYER_EXTRA - 1);
-    graphics_context_set_stroke_color(ctx, GColorBlack);
-    draw_block(ctx, rect, 5);
+    block_rect[0] = GRect(layer->bounds.origin.x, layer->bounds.origin.y + BLOCK_LAYER_EXTRA,
+                          BLOCK_SIZE - 1, layer->frame.size.h - BLOCK_LAYER_EXTRA - 1);
+    block_rect[1] = GRect(layer->bounds.origin.x + BLOCK_SIZE, layer->bounds.origin.y + BLOCK_LAYER_EXTRA,
+                          BLOCK_SIZE - 1, layer->frame.size.h - BLOCK_LAYER_EXTRA - 1);
+
+    for (uint8_t i = 0; i < 2; ++i) {
+        GRect *rect = block_rect + i;
+
+        graphics_context_set_stroke_color(ctx, GColorBlack);
+        draw_block(ctx, *rect, 4);
+
+        // top left dot
+        dot_rect = GRect(rect->origin.x + offset, rect->origin.y + offset,
+                         dot_width, dot_height);
+        graphics_fill_rect(ctx, dot_rect, 1, GCornersAll);
+
+        // top right dot
+        dot_rect = GRect(rect->origin.x + rect->size.w - offset - dot_width, rect->origin.y + offset,
+                         dot_width, dot_height);
+        graphics_fill_rect(ctx, dot_rect, 1, GCornersAll);
+
+        // bottom left dot
+        dot_rect = GRect(rect->origin.x + offset, rect->origin.y + rect->size.h - offset - dot_height,
+                         dot_width, dot_height);
+        graphics_fill_rect(ctx, dot_rect, 1, GCornersAll);
+
+        // bottom right dot
+        dot_rect = GRect(rect->origin.x + rect->size.w - offset - dot_width,
+                         rect->origin.y + rect->size.h - offset - dot_height,
+                         dot_width, dot_height);
+        graphics_fill_rect(ctx, dot_rect, 1, GCornersAll);
+    }
 }
 
 void mario_update_callback(Layer *layer, GContext *ctx)
