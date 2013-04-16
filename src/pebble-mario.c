@@ -90,6 +90,35 @@ void draw_block(GContext *ctx, GRect rect, uint8_t width)
     rect.size.h -= width*2;
     graphics_context_set_fill_color(ctx, GColorWhite);
     graphics_fill_rect(ctx, rect, radius, GCornersAll);
+
+    static const uint8_t dot_offset = 3;
+    static const uint8_t dot_width = 6;
+    static const uint8_t dot_height = 4;
+
+    GRect dot_rect;
+
+    graphics_context_set_fill_color(ctx, GColorBlack);
+
+    // top left dot
+    dot_rect = GRect(rect.origin.x + dot_offset, rect.origin.y + dot_offset,
+                     dot_width, dot_height);
+    graphics_fill_rect(ctx, dot_rect, 1, GCornersAll);
+
+    // top right dot
+    dot_rect = GRect(rect.origin.x + rect.size.w - dot_offset - dot_width, rect.origin.y + dot_offset,
+                     dot_width, dot_height);
+    graphics_fill_rect(ctx, dot_rect, 1, GCornersAll);
+
+    // bottom left dot
+    dot_rect = GRect(rect.origin.x + dot_offset, rect.origin.y + rect.size.h - dot_offset - dot_height,
+                     dot_width, dot_height);
+    graphics_fill_rect(ctx, dot_rect, 1, GCornersAll);
+
+    // bottom right dot
+    dot_rect = GRect(rect.origin.x + rect.size.w - dot_offset - dot_width,
+                     rect.origin.y + rect.size.h - dot_offset - dot_height,
+                     dot_width, dot_height);
+    graphics_fill_rect(ctx, dot_rect, 1, GCornersAll);
 }
 
 void blocks_update_callback(Layer *layer, GContext *ctx)
@@ -97,14 +126,10 @@ void blocks_update_callback(Layer *layer, GContext *ctx)
     (void)layer;
     (void)ctx;
 
-    static const uint8_t offset = 8;
-    static const uint8_t dot_width = 6;
-    static const uint8_t dot_height = 4;
-
     GRect block_rect[2];
-    GRect dot_rect;
 
     block_rect[0] = GRect(layer->bounds.origin.x,
+                          layer->bounds.origin.y + BLOCK_LAYER_EXTRA,
                           BLOCK_SIZE,
                           layer->frame.size.h - BLOCK_LAYER_EXTRA);
     block_rect[1] = GRect(layer->bounds.origin.x + BLOCK_SIZE + BLOCK_SPACING,
@@ -116,29 +141,6 @@ void blocks_update_callback(Layer *layer, GContext *ctx)
         GRect *rect = block_rect + i;
 
         draw_block(ctx, *rect, 4);
-
-        graphics_context_set_fill_color(ctx, GColorBlack);
-
-        // top left dot
-        dot_rect = GRect(rect->origin.x + offset, rect->origin.y + offset,
-                         dot_width, dot_height);
-        graphics_fill_rect(ctx, dot_rect, 1, GCornersAll);
-
-        // top right dot
-        dot_rect = GRect(rect->origin.x + rect->size.w - offset - dot_width, rect->origin.y + offset,
-                         dot_width, dot_height);
-        graphics_fill_rect(ctx, dot_rect, 1, GCornersAll);
-
-        // bottom left dot
-        dot_rect = GRect(rect->origin.x + offset, rect->origin.y + rect->size.h - offset - dot_height,
-                         dot_width, dot_height);
-        graphics_fill_rect(ctx, dot_rect, 1, GCornersAll);
-
-        // bottom right dot
-        dot_rect = GRect(rect->origin.x + rect->size.w - offset - dot_width,
-                         rect->origin.y + rect->size.h - offset - dot_height,
-                         dot_width, dot_height);
-        graphics_fill_rect(ctx, dot_rect, 1, GCornersAll);
     }
 }
 
