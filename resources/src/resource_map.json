@@ -9,13 +9,28 @@
         },
         {
             "type":"png",
+            "defName":"IMAGE_MARIO_NORMAL_INVERSED",
+            "file":"images/mario-normal-inversed.png"
+        },
+        {
+            "type":"png",
             "defName":"IMAGE_MARIO_JUMP",
             "file":"images/mario-jump.png"
         },
         {
             "type":"png",
+            "defName":"IMAGE_MARIO_JUMP_INVERSED",
+            "file":"images/mario-jump-inversed.png"
+        },
+        {
+            "type":"png",
             "defName":"IMAGE_GROUND",
             "file":"images/ground.png"
+        },
+        {
+            "type":"png",
+            "defName":"IMAGE_GROUND_INVERSED",
+            "file":"images/ground-inversed.png"
         }
     ]
 }

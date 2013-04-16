@@ -21,6 +21,8 @@
 #include "pebble_app.h"
 #include "pebble_fonts.h"
 
+// #define INVERSED_COLORS
+
 #define MY_UUID { 0xB6, 0xA0, 0xAB, 0x5F, 0x92, 0xB7, 0x4C, 0x2B, 0xBC, 0x0F, 0x34, 0x6B, 0x99, 0xAE, 0x30, 0xA0 }
 PBL_APP_INFO(MY_UUID,
              "Mario", "Denis Dzyubenko",
@@ -77,18 +79,26 @@ PropertyAnimation minute_animation_slide_in;
 #define CLOCK_ANIMATION_DURATION 150
 #define GROUND_HEIGHT 26
 
+#ifndef INVERSED_COLORS
+#  define MainColor GColorBlack
+#  define BackgroundColor GColorWhite
+#else
+#  define MainColor GColorWhite
+#  define BackgroundColor GColorBlack
+#endif
+
 void draw_block(GContext *ctx, GRect rect, uint8_t width)
 {
     static const uint8_t radius = 1;
 
-    graphics_context_set_fill_color(ctx, GColorBlack);
+    graphics_context_set_fill_color(ctx, MainColor);
     graphics_fill_rect(ctx, rect, radius, GCornersAll);
 
     rect.origin.x += width;
     rect.origin.y += width;
     rect.size.w -= width*2;
     rect.size.h -= width*2;
-    graphics_context_set_fill_color(ctx, GColorWhite);
+    graphics_context_set_fill_color(ctx, BackgroundColor);
     graphics_fill_rect(ctx, rect, radius, GCornersAll);
 
     static const uint8_t dot_offset = 3;
@@ -97,7 +107,7 @@ void draw_block(GContext *ctx, GRect rect, uint8_t width)
 
     GRect dot_rect;
 
-    graphics_context_set_fill_color(ctx, GColorBlack);
+    graphics_context_set_fill_color(ctx, MainColor);
 
     // top left dot
     dot_rect = GRect(rect.origin.x + dot_offset, rect.origin.y + dot_offset,
@@ -183,6 +193,8 @@ void handle_init(AppContextRef ctx)
     window_init(&window, "Window Name");
     window_stack_push(&window, true /* Animated */);
 
+    window_set_background_color(&window, BackgroundColor);
+
     resource_init_current_app(&APP_RESOURCES);
 
     blocks_down_rect = GRect(22, 7, BLOCK_SIZE*2, BLOCK_SIZE + BLOCK_LAYER_EXTRA);
@@ -211,22 +223,28 @@ void handle_init(AppContextRef ctx)
     layer_add_child(&window.layer, &ground_layer);
 
     text_layer_init(&text_hour_layer, hour_normal_rect);
-    text_layer_set_text_color(&text_hour_layer, GColorBlack);
+    text_layer_set_text_color(&text_hour_layer, MainColor);
     text_layer_set_background_color(&text_hour_layer, GColorClear);
     text_layer_set_text_alignment(&text_hour_layer, GTextAlignmentCenter);
     text_layer_set_font(&text_hour_layer, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
     layer_add_child(&blocks_layer, &text_hour_layer.layer);
 
     text_layer_init(&text_minute_layer, GRect(55, 5, 40, 40));
-    text_layer_set_text_color(&text_minute_layer, GColorBlack);
+    text_layer_set_text_color(&text_minute_layer, MainColor);
     text_layer_set_background_color(&text_minute_layer, GColorClear);
     text_layer_set_text_alignment(&text_minute_layer, GTextAlignmentCenter);
     text_layer_set_font(&text_minute_layer, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
     layer_add_child(&blocks_layer, &text_minute_layer.layer);
 
+#ifndef INVERSED_COLORS
     bmp_init_container(RESOURCE_ID_IMAGE_MARIO_NORMAL, &mario_normal_bmp);
     bmp_init_container(RESOURCE_ID_IMAGE_MARIO_JUMP, &mario_jump_bmp);
     bmp_init_container(RESOURCE_ID_IMAGE_GROUND, &ground_bmp);
+#else
+    bmp_init_container(RESOURCE_ID_IMAGE_MARIO_NORMAL_INVERSED, &mario_normal_bmp);
+    bmp_init_container(RESOURCE_ID_IMAGE_MARIO_JUMP_INVERSED, &mario_jump_bmp);
+    bmp_init_container(RESOURCE_ID_IMAGE_GROUND_INVERSED, &ground_bmp);
+#endif
 }
 
 void handle_deinit(AppContextRef ctx)
