@@ -37,9 +37,11 @@ Layer mario_layer;
 TextLayer text_hour_layer;
 TextLayer text_minute_layer;
 Layer ground_layer;
+TextLayer date_layer;
 
 static char hour_text[]   = "00";
 static char minute_text[] = "00";
+static char date_text[] = "Wed, Apr 17";
 
 GRect blocks_down_rect;
 GRect blocks_up_rect;
@@ -184,6 +186,8 @@ void ground_update_callback(Layer *layer, GContext *ctx)
         graphics_draw_bitmap_in_rect(ctx, &ground_bmp.bmp, image_rect);
         image_rect.origin.x +=  image_width;
     }
+
+    text_layer_set_text(&date_layer, date_text);
 }
 
 void handle_init(AppContextRef ctx)
@@ -235,6 +239,14 @@ void handle_init(AppContextRef ctx)
     text_layer_set_text_alignment(&text_minute_layer, GTextAlignmentCenter);
     text_layer_set_font(&text_minute_layer, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
     layer_add_child(&blocks_layer, &text_minute_layer.layer);
+
+    GRect date_rect = GRect(30, 6, 144-30*2, ground_rect.size.h-6*2);
+    text_layer_init(&date_layer, date_rect);
+    text_layer_set_text_color(&date_layer, BackgroundColor);
+    text_layer_set_background_color(&date_layer, MainColor);
+    text_layer_set_text_alignment(&date_layer, GTextAlignmentCenter);
+    text_layer_set_font(&date_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18));
+    layer_add_child(&ground_layer, &date_layer.layer);
 
 #ifndef INVERSED_COLORS
     bmp_init_container(RESOURCE_ID_IMAGE_MARIO_NORMAL, &mario_normal_bmp);
@@ -390,6 +402,8 @@ void handle_tick(AppContextRef app_ctx, PebbleTickEvent *event)
 
     char *minute_format = "%M";
     string_format_time(minute_text, sizeof(minute_text), minute_format, event->tick_time);
+
+    string_format_time(date_text, sizeof(date_text), "%a, %b %d", event->tick_time);
 
     animation_schedule(&mario_animation_beg.animation);
     animation_schedule(&block_animation_beg.animation);
