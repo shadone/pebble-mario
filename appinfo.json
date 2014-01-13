@@ -13,6 +13,12 @@
     "media": [
       {
         "type": "png",
+        "name": "IMAGE_MENU_ICON",
+        "file": "images/menuicon.png",
+        "menuIcon": true
+      },
+       {
+        "type": "png",
         "name": "IMAGE_MARIO_NORMAL",
         "file": "images/mario-normal.png"
       },
