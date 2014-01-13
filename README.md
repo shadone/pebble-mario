@@ -3,7 +3,7 @@ _by Denis Dzyubenko_
 
 Mario jumps every minute.
 
-[![Preview](http://i.imgur.com/Vl6cLh9.jpg)](http://i.imgur.com/Vl6cLh9.jpg)
+[![Preview](https://github.com/shadone/pebble-mario/raw/master/preview.png)](https://github.com/shadone/pebble-mario/raw/master/preview.png)
 
 Based on a concept by Habib:
 http://www.mypebblefaces.com/view?fID=290&aName=Habib&pageTitle=MarioTime&auID=265
