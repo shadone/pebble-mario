@@ -21,6 +21,7 @@
 #include <time.h>
 
 // #define INVERSED_COLORS
+#define DEMO // display fake time. Good for taking screenshots of the watchface.
 
 Window *window;
 
@@ -80,6 +81,10 @@ PropertyAnimation *minute_animation_slide_in;
 #else
 #  define MainColor GColorWhite
 #  define BackgroundColor GColorBlack
+#endif
+
+#if defined(DEMO)
+static int demo_advance_time = 0;
 #endif
 
 void handle_tick(struct tm *tick_time, TimeUnits units_changed);
@@ -253,7 +258,12 @@ void handle_init()
     ground_bmp = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_GROUND_INVERSED);
 #endif
 
-    tick_timer_service_subscribe(MINUTE_UNIT, handle_tick);
+#if defined(DEMO)
+    #define MARIO_TIME_UNIT SECOND_UNIT
+#else
+    #define MARIO_TIME_UNIT MINUTE_UNIT
+#endif
+    tick_timer_service_subscribe(MARIO_TIME_UNIT, handle_tick);
 }
 
 void handle_deinit()
@@ -432,6 +442,20 @@ void handle_tick(struct tm *tick_time, TimeUnits units_changed)
         animation_set_curve((Animation *)minute_animation_slide_away, AnimationCurveLinear);
     }
 
+#if defined(DEMO)
+    strncpy(date_text, "Sat, May 19", sizeof(date_text)-1);
+    date_text[sizeof(date_text)-1] = '\0';
+
+    hour_text[0] = '9';
+    hour_text[1] = '\0';
+    minute_text[0] = '4';
+    minute_text[1] = '1';
+    minute_text[2] = '\0';
+    if (demo_advance_time) {
+        minute_text[1] = '2';
+    }
+    demo_advance_time ^= 1;
+#else
     char *hour_format;
     if (clock_is_24h_style()) {
         hour_format = "%H";
@@ -448,6 +472,7 @@ void handle_tick(struct tm *tick_time, TimeUnits units_changed)
     strftime(minute_text, sizeof(minute_text), minute_format, tick_time);
 
     strftime(date_text, sizeof(date_text), "%a, %b %d", tick_time);
+#endif
 
     animation_schedule((Animation *)mario_animation_beg);
     animation_schedule((Animation *)block_animation_beg);
