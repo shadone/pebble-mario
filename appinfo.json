@@ -1,0 +1,46 @@
+{
+  "uuid": "b6a0ab5f-92b7-4c2b-bc0f-346b99ae30a0",
+  "shortName": "Mario",
+  "longName": "Mario",
+  "companyName": "Denis Dzyubenko",
+  "versionCode": 2,
+  "versionLabel": "2.0.0",
+  "watchapp": {
+    "watchface": true
+  },
+  "appKeys": {},
+  "resources": {
+    "media": [
+      {
+        "type": "png",
+        "name": "IMAGE_MARIO_NORMAL",
+        "file": "images/mario-normal.png"
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_MARIO_NORMAL_INVERSED",
+        "file": "images/mario-normal-inversed.png"
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_MARIO_JUMP",
+        "file": "images/mario-jump.png"
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_MARIO_JUMP_INVERSED",
+        "file": "images/mario-jump-inversed.png"
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_GROUND",
+        "file": "images/ground.png"
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_GROUND_INVERSED",
+        "file": "images/ground-inversed.png"
+      }
+    ]
+  }
+}
