@@ -21,7 +21,7 @@
 #include <time.h>
 
 // #define INVERSED_COLORS
-#define DEMO // display fake time. Good for taking screenshots of the watchface.
+// #define DEMO // display fake time. Good for taking screenshots of the watchface.
 
 Window *window;
 
