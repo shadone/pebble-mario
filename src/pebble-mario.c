@@ -439,18 +439,15 @@ void handle_tick(struct tm *tick_time, TimeUnits units_changed)
         hour_format = "%I";
     }
 
-    time_t current_time = time(NULL);
-    struct tm *tm = localtime(&current_time);
-
-    strftime(hour_text, sizeof(hour_text), hour_format, tm);
+    strftime(hour_text, sizeof(hour_text), hour_format, tick_time);
     if (!clock_is_24h_style() && (hour_text[0] == '0')) {
         memmove(hour_text, &hour_text[1], sizeof(hour_text) - 1);
     }
 
     char *minute_format = "%M";
-    strftime(minute_text, sizeof(minute_text), minute_format, tm);
+    strftime(minute_text, sizeof(minute_text), minute_format, tick_time);
 
-    strftime(date_text, sizeof(date_text), "%a, %b %d", tm);
+    strftime(date_text, sizeof(date_text), "%a, %b %d", tick_time);
 
     animation_schedule((Animation *)mario_animation_beg);
     animation_schedule((Animation *)block_animation_beg);
