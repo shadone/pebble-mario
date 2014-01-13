@@ -260,11 +260,28 @@ void handle_deinit()
 {
     tick_timer_service_unsubscribe();
 
+    animation_unschedule_all();
+
+    property_animation_destroy(mario_animation_beg);
+    property_animation_destroy(mario_animation_end);
+    property_animation_destroy(block_animation_beg);
+    property_animation_destroy(block_animation_end);
+    property_animation_destroy(hour_animation_slide_in);
+    property_animation_destroy(hour_animation_slide_away);
+    property_animation_destroy(minute_animation_slide_in);
+    property_animation_destroy(minute_animation_slide_away);
+
     gbitmap_destroy(mario_normal_bmp);
     gbitmap_destroy(mario_jump_bmp);
     gbitmap_destroy(ground_bmp);
 
-    // TODO: destroy all the resources!
+    text_layer_destroy(date_layer);
+    text_layer_destroy(text_minute_layer);
+    text_layer_destroy(text_hour_layer);
+
+    layer_destroy(ground_layer);
+    layer_destroy(mario_layer);
+    layer_destroy(blocks_layer);
 
     window_destroy(window);
 }
@@ -299,15 +316,17 @@ void mario_jump_animation_stopped(Animation *animation, void *data)
     text_layer_set_text(text_hour_layer, hour_text);
     text_layer_set_text(text_minute_layer, minute_text);
 
-    mario_animation_end = property_animation_create_layer_frame(mario_layer,
-                                                                &mario_up_rect,
-                                                                &mario_down_rect);
-    animation_set_duration((Animation *)mario_animation_end, MARIO_JUMP_DURATION);
-    animation_set_curve((Animation *)mario_animation_end, AnimationCurveEaseIn);
-    animation_set_handlers((Animation *)mario_animation_end, (AnimationHandlers){
-        .started = (AnimationStartedHandler)mario_down_animation_started,
-        .stopped = (AnimationStoppedHandler)mario_down_animation_stopped
-    }, 0);
+    if (!mario_animation_end) {
+        mario_animation_end = property_animation_create_layer_frame(mario_layer,
+                                                                    &mario_up_rect,
+                                                                    &mario_down_rect);
+        animation_set_duration((Animation *)mario_animation_end, MARIO_JUMP_DURATION);
+        animation_set_curve((Animation *)mario_animation_end, AnimationCurveEaseIn);
+        animation_set_handlers((Animation *)mario_animation_end, (AnimationHandlers){
+            .started = (AnimationStartedHandler)mario_down_animation_started,
+            .stopped = (AnimationStoppedHandler)mario_down_animation_stopped
+        }, 0);
+    }
 
     animation_schedule((Animation *)mario_animation_end);
 }
@@ -323,11 +342,13 @@ void block_up_animation_stopped(Animation *animation, void *data)
     (void)animation;
     (void)data;
 
-    block_animation_end = property_animation_create_layer_frame(blocks_layer,
-                                                                &blocks_up_rect,
-                                                                &blocks_down_rect);
-    animation_set_duration((Animation *)block_animation_end, MARIO_JUMP_DURATION);
-    animation_set_curve((Animation *)block_animation_end, AnimationCurveEaseIn);
+    if (!block_animation_end) {
+        block_animation_end = property_animation_create_layer_frame(blocks_layer,
+                                                                    &blocks_up_rect,
+                                                                    &blocks_down_rect);
+        animation_set_duration((Animation *)block_animation_end, MARIO_JUMP_DURATION);
+        animation_set_curve((Animation *)block_animation_end, AnimationCurveEaseIn);
+    }
     animation_schedule((Animation *)block_animation_end);
 }
 
@@ -345,58 +366,71 @@ void clock_animation_slide_away_stopped(Animation *animation, void *data)
     layer_set_frame((Layer *)text_hour_layer, hour_down_rect);
     layer_set_frame((Layer *)text_minute_layer, minute_down_rect);
 
-    hour_animation_slide_in = property_animation_create_layer_frame((Layer *)text_hour_layer,
-                                                                    &hour_down_rect,
-                                                                    &hour_normal_rect);
-    animation_set_duration((Animation *)hour_animation_slide_in, CLOCK_ANIMATION_DURATION);
-    animation_set_curve((Animation *)hour_animation_slide_in, AnimationCurveLinear);
-    animation_schedule((Animation *)hour_animation_slide_in);
+    if (!hour_animation_slide_in) {
+        hour_animation_slide_in = property_animation_create_layer_frame((Layer *)text_hour_layer,
+                                                                        &hour_down_rect,
+                                                                        &hour_normal_rect);
+        animation_set_duration((Animation *)hour_animation_slide_in, CLOCK_ANIMATION_DURATION);
+        animation_set_curve((Animation *)hour_animation_slide_in, AnimationCurveLinear);
+    }
 
-    minute_animation_slide_in = property_animation_create_layer_frame((Layer *)text_minute_layer,
-                                                                      &minute_down_rect,
-                                                                      &minute_normal_rect);
-    animation_set_duration((Animation *)minute_animation_slide_in, CLOCK_ANIMATION_DURATION);
-    animation_set_curve((Animation *)minute_animation_slide_in, AnimationCurveLinear);
+    if (!minute_animation_slide_in) {
+        minute_animation_slide_in = property_animation_create_layer_frame((Layer *)text_minute_layer,
+                                                                          &minute_down_rect,
+                                                                          &minute_normal_rect);
+        animation_set_duration((Animation *)minute_animation_slide_in, CLOCK_ANIMATION_DURATION);
+        animation_set_curve((Animation *)minute_animation_slide_in, AnimationCurveLinear);
+    }
+
+    animation_schedule((Animation *)hour_animation_slide_in);
     animation_schedule((Animation *)minute_animation_slide_in);
 }
 
 void handle_tick(struct tm *tick_time, TimeUnits units_changed)
 {
-    mario_animation_beg = property_animation_create_layer_frame(mario_layer,
-                                                                &mario_down_rect,
-                                                                &mario_up_rect);
-    animation_set_duration((Animation *)mario_animation_beg, MARIO_JUMP_DURATION);
-    animation_set_curve((Animation *)mario_animation_beg, AnimationCurveEaseOut);
-    animation_set_handlers((Animation *)mario_animation_beg, (AnimationHandlers){
-        .started = (AnimationStartedHandler)mario_jump_animation_started,
-        .stopped = (AnimationStoppedHandler)mario_jump_animation_stopped
-    }, 0);
+    if (!mario_animation_beg) {
+        mario_animation_beg = property_animation_create_layer_frame(mario_layer,
+                                                                    &mario_down_rect,
+                                                                    &mario_up_rect);
+        animation_set_duration((Animation *)mario_animation_beg, MARIO_JUMP_DURATION);
+        animation_set_curve((Animation *)mario_animation_beg, AnimationCurveEaseOut);
+        animation_set_handlers((Animation *)mario_animation_beg, (AnimationHandlers){
+            .started = (AnimationStartedHandler)mario_jump_animation_started,
+            .stopped = (AnimationStoppedHandler)mario_jump_animation_stopped
+        }, 0);
+    }
 
-    block_animation_beg = property_animation_create_layer_frame(blocks_layer,
-                                                                &blocks_down_rect,
-                                                                &blocks_up_rect);
-    animation_set_duration((Animation *)block_animation_beg, MARIO_JUMP_DURATION);
-    animation_set_curve((Animation *)block_animation_beg, AnimationCurveEaseOut);
-    animation_set_handlers((Animation *)block_animation_beg, (AnimationHandlers){
-        .started = (AnimationStartedHandler)block_up_animation_started,
-        .stopped = (AnimationStoppedHandler)block_up_animation_stopped
-    }, 0);
+    if (!block_animation_beg) {
+        block_animation_beg = property_animation_create_layer_frame(blocks_layer,
+                                                                    &blocks_down_rect,
+                                                                    &blocks_up_rect);
+        animation_set_duration((Animation *)block_animation_beg, MARIO_JUMP_DURATION);
+        animation_set_curve((Animation *)block_animation_beg, AnimationCurveEaseOut);
+        animation_set_handlers((Animation *)block_animation_beg, (AnimationHandlers){
+            .started = (AnimationStartedHandler)block_up_animation_started,
+            .stopped = (AnimationStoppedHandler)block_up_animation_stopped
+        }, 0);
+    }
 
-    hour_animation_slide_away = property_animation_create_layer_frame((Layer *)text_hour_layer,
-                                                                      &hour_normal_rect,
-                                                                      &hour_up_rect);
-    animation_set_duration((Animation *)hour_animation_slide_away, CLOCK_ANIMATION_DURATION);
-    animation_set_curve((Animation *)hour_animation_slide_away, AnimationCurveLinear);
-    animation_set_handlers((Animation *)hour_animation_slide_away, (AnimationHandlers){
-        .started = (AnimationStartedHandler)clock_animation_slide_away_started,
-        .stopped = (AnimationStoppedHandler)clock_animation_slide_away_stopped
-    }, 0);
+    if (!hour_animation_slide_away) {
+        hour_animation_slide_away = property_animation_create_layer_frame((Layer *)text_hour_layer,
+                                                                          &hour_normal_rect,
+                                                                          &hour_up_rect);
+        animation_set_duration((Animation *)hour_animation_slide_away, CLOCK_ANIMATION_DURATION);
+        animation_set_curve((Animation *)hour_animation_slide_away, AnimationCurveLinear);
+        animation_set_handlers((Animation *)hour_animation_slide_away, (AnimationHandlers){
+            .started = (AnimationStartedHandler)clock_animation_slide_away_started,
+            .stopped = (AnimationStoppedHandler)clock_animation_slide_away_stopped
+        }, 0);
+    }
 
-    minute_animation_slide_away = property_animation_create_layer_frame((Layer *)text_minute_layer,
-                                                                        &minute_normal_rect,
-                                                                        &minute_up_rect);
-    animation_set_duration((Animation *)minute_animation_slide_away, CLOCK_ANIMATION_DURATION);
-    animation_set_curve((Animation *)minute_animation_slide_away, AnimationCurveLinear);
+    if (!minute_animation_slide_away) {
+        minute_animation_slide_away = property_animation_create_layer_frame((Layer *)text_minute_layer,
+                                                                            &minute_normal_rect,
+                                                                            &minute_up_rect);
+        animation_set_duration((Animation *)minute_animation_slide_away, CLOCK_ANIMATION_DURATION);
+        animation_set_curve((Animation *)minute_animation_slide_away, AnimationCurveLinear);
+    }
 
     char *hour_format;
     if (clock_is_24h_style()) {
